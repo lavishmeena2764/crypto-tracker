@@ -1,9 +1,10 @@
 import express, { json } from 'express';
 import cron from 'node-cron';
 import CryptoService from './services/cryptoService.js';
+import cryptoRoutes from './routes/crypto.routes.js';
 import connectDB from './config/db.config.js';
 import dotenv from 'dotenv';
-const logger = require('./utils/logger.js');
+import logger from './utils/logger.js';
 dotenv.config();
 
 const app = express();
@@ -15,7 +16,13 @@ connectDB();
 // Middleware
 app.use(json());
 
+// Routes
+app.use('/api', cryptoRoutes);
 
+(async () => {
+  logger.info('Running initial crypto data update');
+  await CryptoService.updateCryptoData();
+})();
 // Schedule background job to run every 2 hours
 cron.schedule('0 */2 * * *', async () => {
   logger.info('Running scheduled crypto data update');
